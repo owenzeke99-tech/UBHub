@@ -1,0 +1,262 @@
+-- Tên file lưu key trong thư mục của executor
+local KEY_FILE = "UBHub_KeyCache.json"
+-- Mật khẩu đúng của bạn
+local CORRECT_KEY = "UBHubKeyKaiwakoqowjGsksjebdjejebpqpieolahs"
+-- Link Get Key mới của bạn
+local GET_KEY_LINK = "https://link4m.org/NnuquLbV"
+
+-- Hàm kiểm tra xem file key đã lưu còn hạn không (24 giờ = 86400 giây)
+local function hasValidSavedKey()
+	if readfile and isfile and isfile(KEY_FILE) then
+		local success, data = pcall(function()
+			return game:GetService("HttpService"):JSONDecode(readfile(KEY_FILE))
+		end)
+		if success and data and data.key == CORRECT_KEY and data.time then
+			if os.time() - data.time < 86400 then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- Hàm lưu key lại với mốc thời gian hiện tại
+local function saveKey()
+	if writefile then
+		local data = {
+			key = CORRECT_KEY,
+			time = os.time()
+		}
+		pcall(function()
+			writefile(KEY_FILE, game:GetService("HttpService"):JSONEncode(data))
+		end)
+	end
+end
+
+-- Hàm thực thi load script chính
+local function loadMainScript()
+	local success, err = pcall(function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/TeamUBHub/UBLoader/refs/heads/main/Loader.lua"))()
+	end)
+	
+	if not success then
+		warn("Error loading main script: " .. tostring(err))
+	end
+end
+
+-- Nếu đã lưu key hợp lệ trong vòng 24 giờ thì tự động bỏ qua bảng key và load luôn script
+if hasValidSavedKey() then
+	loadMainScript()
+	return
+end
+
+-- Tạo giao diện Key System nếu chưa có key hợp lệ
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local TopBar = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+local ContentFrame = Instance.new("Frame")
+local TextBox = Instance.new("TextBox")
+local UICornerBox = Instance.new("UICorner")
+local UIStrokeBox = Instance.new("UIStroke")
+local CheckButton = Instance.new("TextButton")
+local UICornerCheck = Instance.new("UICorner")
+local GetKeyButton = Instance.new("TextButton")
+local UICornerGet = Instance.new("UICorner")
+local ErrorLabel = Instance.new("TextLabel")
+
+-- Cấu hình ScreenGui
+ScreenGui.Name = "UBHubKeySystem"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Khung chính (Màu đen tuyền sang trọng)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -110)
+MainFrame.Size = UDim2.new(0, 350, 0, 220)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Viền cam nhạt tạo điểm nhấn
+UIStroke.Parent = MainFrame
+UIStroke.Color = Color3.fromRGB(255, 140, 66)
+UIStroke.Thickness = 1.5
+
+-- Thanh tiêu đề
+TopBar.Name = "TopBar"
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+
+local TopBarCorner = Instance.new("UICorner")
+TopBarCorner.CornerRadius = UDim.new(0, 12)
+TopBarCorner.Parent = TopBar
+
+local FixTopBar = Instance.new("Frame")
+FixTopBar.Parent = TopBar
+FixTopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+FixTopBar.BorderSizePixel = 0
+FixTopBar.Position = UDim2.new(0, 0, 0.5, 0)
+FixTopBar.Size = UDim2.new(1, 0, 0.5, 0)
+
+-- Tiêu đề "UB Hub" canh giữa menu
+Title.Parent = TopBar
+Title.BackgroundTransparency = 1.00
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "UB Hub"
+Title.TextColor3 = Color3.fromRGB(255, 155, 80)
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Center
+
+-- Nút đóng (X)
+CloseButton.Parent = TopBar
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.BackgroundTransparency = 1.00
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(160, 160, 160)
+CloseButton.TextSize = 22
+
+CloseButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- Khung chứa nội dung bên trong
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundTransparency = 1.00
+ContentFrame.Position = UDim2.new(0, 0, 0, 40)
+ContentFrame.Size = UDim2.new(1, 0, 1, -40)
+
+-- Ô nhập Key (TextBox)
+TextBox.Name = "KeyBox"
+TextBox.Parent = ContentFrame
+TextBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TextBox.Position = UDim2.new(0.08, 0, 0.12, 0)
+TextBox.Size = UDim2.new(0, 295, 0, 42)
+TextBox.Font = Enum.Font.GothamMedium
+TextBox.PlaceholderText = "Enter your key here..."
+TextBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 14
+
+UICornerBox.CornerRadius = UDim.new(0, 8)
+UICornerBox.Parent = TextBox
+
+UIStrokeBox.Parent = TextBox
+UIStrokeBox.Color = Color3.fromRGB(45, 45, 45)
+UIStrokeBox.Thickness = 1
+
+-- Nút Xác Nhận (Check Key)
+CheckButton.Name = "CheckButton"
+CheckButton.Parent = ContentFrame
+CheckButton.BackgroundColor3 = Color3.fromRGB(255, 140, 66)
+CheckButton.Position = UDim2.new(0.08, 0, 0.45, 0)
+CheckButton.Size = UDim2.new(0, 142, 0, 38)
+CheckButton.Font = Enum.Font.GothamBold
+CheckButton.Text = "Check Key"
+CheckButton.TextColor3 = Color3.fromRGB(20, 20, 20)
+
+UICornerCheck.CornerRadius = UDim.new(0, 8)
+UICornerCheck.Parent = CheckButton
+
+-- Nút Lấy Key (Get Key)
+GetKeyButton.Name = "GetKeyButton"
+GetKeyButton.Parent = ContentFrame
+GetKeyButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+GetKeyButton.Position = UDim2.new(0.515, 0, 0.45, 0)
+GetKeyButton.Size = UDim2.new(0, 142, 0, 38)
+GetKeyButton.Font = Enum.Font.GothamBold
+GetKeyButton.Text = "Get Key"
+GetKeyButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+
+UICornerGet.CornerRadius = UDim.new(0, 8)
+UICornerGet.Parent = GetKeyButton
+
+-- Dòng thông báo lỗi / trạng thái
+ErrorLabel.Name = "ErrorLabel"
+ErrorLabel.Parent = ContentFrame
+ErrorLabel.BackgroundTransparency = 1.00
+ErrorLabel.Position = UDim2.new(0.08, 0, 0.76, 0)
+ErrorLabel.Size = UDim2.new(0, 295, 0, 25)
+ErrorLabel.Font = Enum.Font.GothamMedium
+ErrorLabel.Text = ""
+ErrorLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+ErrorLabel.TextSize = 13
+
+-- Hiệu ứng Hover mượt mà
+local function applyHover(btn, originalColor, hoverColor)
+	btn.MouseEnter:Connect(function()
+		game:GetService("TweenService"):Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		game:GetService("TweenService"):Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
+	end)
+end
+
+applyHover(CheckButton, Color3.fromRGB(255, 140, 66), Color3.fromRGB(255, 165, 95))
+applyHover(GetKeyButton, Color3.fromRGB(30, 30, 30), Color3.fromRGB(45, 45, 45))
+applyHover(CloseButton, Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
+
+-- Hàm hiệu ứng lắc nhẹ (Shake Animation) khi nhập sai key
+local function shakeWindow()
+	local originalPos = MainFrame.Position
+	local tweenService = game:GetService("TweenService")
+	local info = TweenInfo.new(0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+	
+	for i = 1, 3 do
+		tweenService:Create(MainFrame, info, {Position = originalPos + UDim2.new(0, -8, 0, 0)}):Play()
+		task.wait(0.05)
+		tweenService:Create(MainFrame, info, {Position = originalPos + UDim2.new(0, 8, 0, 0)}):Play()
+		task.wait(0.05)
+	end
+	tweenService:Create(MainFrame, info, {Position = originalPos}):Play()
+end
+
+-- Xử lý sự kiện nút Get Key
+GetKeyButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(GET_KEY_LINK)
+		ErrorLabel.TextColor3 = Color3.fromRGB(80, 255, 150)
+		ErrorLabel.Text = "Link copied to clipboard!"
+	else
+		ErrorLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+		ErrorLabel.Text = "Your executor does not support setclipboard!"
+	end
+end)
+
+-- Xử lý sự kiện nút Check Key
+CheckButton.MouseButton1Click:Connect(function()
+	if TextBox.Text == CORRECT_KEY then
+		ErrorLabel.TextColor3 = Color3.fromRGB(80, 255, 150)
+		ErrorLabel.Text = "Key correct! Loading..."
+		
+		-- Lưu key vào tệp cấu hình (cache) tính bằng thời gian hiện tại
+		saveKey()
+		
+		task.wait(0.8)
+		
+		-- Xóa giao diện
+		ScreenGui:Destroy()
+		
+		-- Chạy script chính
+		loadMainScript()
+	else
+		-- Báo lỗi nhập sai, xóa nội dung trong ô nhập và kích hoạt hiệu ứng lắc nhẹ
+		ErrorLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+		ErrorLabel.Text = "Invalid Key! Please try again."
+		TextBox.Text = "" -- Tự động xóa chữ khi nhập sai
+		task.spawn(shakeWindow)
+	end
+end)
